@@ -45,4 +45,18 @@
     <string name="about_thanks_open_source">And thanks to the wider open-source community and every contributor who makes projects like this possible.</string>
     <string name="about_source_code">MaxxOS-AOSP / packages_apps_ExactCalculator</string>
 
+
+    <string name="category_area">Area</string>
+    <string name="category_volume">Volume</string>
+    <string name="category_speed">Speed</string>
+    <string name="category_time">Time</string>
+    <string name="category_pressure">Pressure</string>
+    <string name="category_energy">Energy</string>
+    <string name="category_power">Power</string>
+    <string name="category_data">Data</string>
+    <string name="category_angle">Angle</string>
+    <string name="category_frequency">Frequency</string>
+    <string name="category_force">Force</string>
+    <string name="category_currency">Currency</string>
+
 </resources>

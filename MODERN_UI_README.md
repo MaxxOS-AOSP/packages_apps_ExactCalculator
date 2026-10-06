@@ -1,29 +1,24 @@
-# ExactCalculator — Modern Expressive UI
+# MaxxOS ExactCalculator – Advanced Converter Update
 
-This fork keeps the original calculator/evaluator implementation and redesigns the UI around the requested modern rounded Material-style design.
+This staging update keeps the MaxxOS Modern UI, Old Style theme, About/Settings pages, animated bottom navigation and glass navigation work, and expands Converter into a multi-category unit converter.
 
-## Included
-- Rounded calculator display card with soft mint/teal light theme.
-- Matching dark theme.
-- Floating bottom navigation pill: Calculator / History / Converter / Settings.
-- Modern calculator header and history action.
-- Modernized history cards.
-- Functional Length, Weight and Temperature converter.
-- Settings screen with System / Light / Dark selection.
-- Optional Old Style theme switch using a warm vintage calculator palette.
-- Existing scientific/evaluator/history functionality is retained in source.
+## Converter categories
+- Length
+- Area
+- Volume
+- Weight
+- Temperature
+- Speed
+- Time
+- Pressure
+- Energy
+- Power
+- Data
+- Angle
+- Frequency
+- Force
+- Currency
 
-## Notes
-- The default portrait layout hides the advanced scientific keypad so the main screen matches the supplied reference design.
-- The scientific keypad source remains in the project and can be exposed in a later dedicated Scientific screen/expansion control.
-- Currency conversion is intentionally not faked; live currency data should be connected to a real data source if desired.
+The converter supports swapping source/target units and a scrollable category selector. Currency uses bundled reference rates and is intentionally not presented as a live market-rate feed.
 
-## Build
-Place this directory at `packages/apps/ExactCalculator` (or keep the existing project path) and build the `ExactCalculator` target with the ROM's normal Android build system.
-
-
-## MaxxOS About page
-
-The Settings screen now includes an **About MaxxOS Calculator** entry. The page credits MaxxOS, Anshuman X, LineageOS and the wider open-source community, and provides a clickable link to the official source repository:
-
-https://github.com/MaxxOS-AOSP/packages_apps_ExactCalculator
+Design: Anshuman X / MaxxOS.
