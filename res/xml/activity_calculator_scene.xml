@@ -18,34 +18,42 @@
             motion:touchAnchorSide="bottom" />
     </Transition>
 
-    <ConstraintSet android:id="@+id/start_state" />
-
-    <ConstraintSet android:id="@+id/end_state">
+    <!--
+         Explicit calculator layout. The previous empty start state left the
+         calculator children unconstrained on first launch, which caused the
+         display/keypad to collapse and the bottom navigation to appear at the
+         top of the screen.
+    -->
+    <ConstraintSet android:id="@+id/start_state">
         <Constraint
             android:id="@id/history_frame"
+            android:visibility="gone"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            motion:layout_constraintBottom_toTopOf="@id/display"
+            motion:layout_constraintBottom_toBottomOf="parent"
             motion:layout_constraintEnd_toEndOf="parent"
             motion:layout_constraintStart_toStartOf="parent"
             motion:layout_constraintTop_toTopOf="parent" />
+
         <Constraint
-            android:id="@+id/display"
+            android:id="@id/display"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            motion:layout_constraintBottom_toTopOf="@id/advanced_pad"
             motion:layout_constraintEnd_toEndOf="parent"
             motion:layout_constraintHeight_percent="@dimen/layout_display_ratio"
-            motion:layout_constraintStart_toStartOf="parent" />
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:layout_constraintTop_toTopOf="parent" />
+
         <Constraint
             android:id="@id/advanced_pad"
             android:visibility="gone"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            motion:layout_constraintBottom_toTopOf="@id/input_pad"
             motion:layout_constraintEnd_toEndOf="parent"
             motion:layout_constraintHeight_percent="@dimen/layout_advanced_pad_ratio"
-            motion:layout_constraintStart_toStartOf="parent" />
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:layout_constraintTop_toBottomOf="@id/display" />
+
         <Constraint
             android:id="@id/input_pad"
             android:layout_width="0dp"
@@ -54,5 +62,87 @@
             motion:layout_constraintEnd_toEndOf="parent"
             motion:layout_constraintStart_toStartOf="parent"
             motion:layout_constraintTop_toBottomOf="@id/display" />
+
+        <Constraint
+            android:id="@id/bottom_navigation"
+            android:layout_width="0dp"
+            android:layout_height="76dp"
+            android:layout_marginStart="18dp"
+            android:layout_marginEnd="18dp"
+            android:layout_marginBottom="12dp"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintEnd_toEndOf="parent"
+            motion:layout_constraintStart_toStartOf="parent" />
+
+        <Constraint
+            android:id="@id/animation_helper"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintEnd_toEndOf="parent"
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:layout_constraintTop_toTopOf="parent" />
+    </ConstraintSet>
+
+    <!-- History state: history fills the screen while the navigation pill stays visible. -->
+    <ConstraintSet android:id="@+id/end_state">
+        <Constraint
+            android:id="@id/history_frame"
+            android:visibility="visible"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintEnd_toEndOf="parent"
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:layout_constraintTop_toTopOf="parent" />
+
+        <Constraint
+            android:id="@id/display"
+            android:visibility="gone"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            motion:layout_constraintEnd_toEndOf="parent"
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:layout_constraintTop_toTopOf="parent" />
+
+        <Constraint
+            android:id="@id/advanced_pad"
+            android:visibility="gone"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            motion:layout_constraintEnd_toEndOf="parent"
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:layout_constraintTop_toTopOf="parent" />
+
+        <Constraint
+            android:id="@id/input_pad"
+            android:visibility="gone"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            motion:layout_constraintEnd_toEndOf="parent"
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:layout_constraintTop_toTopOf="parent" />
+
+        <Constraint
+            android:id="@id/bottom_navigation"
+            android:layout_width="0dp"
+            android:layout_height="76dp"
+            android:layout_marginStart="18dp"
+            android:layout_marginEnd="18dp"
+            android:layout_marginBottom="12dp"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintEnd_toEndOf="parent"
+            motion:layout_constraintStart_toStartOf="parent" />
+
+        <Constraint
+            android:id="@id/animation_helper"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintEnd_toEndOf="parent"
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:layout_constraintTop_toTopOf="parent" />
     </ConstraintSet>
 </MotionScene>

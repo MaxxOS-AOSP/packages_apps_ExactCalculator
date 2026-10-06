@@ -57,6 +57,11 @@
     <include
         android:id="@+id/bottom_navigation"
         layout="@layout/bottom_navigation"
+        android:layout_width="0dp"
+        android:layout_height="76dp"
+        android:layout_marginStart="18dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginBottom="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
