@@ -358,7 +358,7 @@ public class Calculator extends AppCompatActivity
             public void onTransitionStarted(MotionLayout motionLayout, int startId, int endId) {
                 if (startId == R.id.start_state) {
                     showHistoryFragment();
-                    selectModernNav(R.id.nav_history);
+                    setNavIndex(1);
                 }
             }
 
@@ -371,7 +371,7 @@ public class Calculator extends AppCompatActivity
             public void onTransitionCompleted(MotionLayout motionLayout, int currentId) {
                 if (currentId == R.id.start_state) {
                     removeHistoryFragment();
-                    selectModernNav(R.id.nav_calculator);
+                    setNavIndex(0);
                 }
             }
 
@@ -398,7 +398,11 @@ public class Calculator extends AppCompatActivity
         // fragment transactions and crashes after changing themes.
         if (getHistoryFragment() != null) {
             mMainCalculator.transitionToState(R.id.end_state, 0);
-            selectModernNav(R.id.nav_history);
+            setNavIndex(1);
+        } else if (getIntent() != null && getIntent().getBooleanExtra("open_history", false)) {
+            getIntent().removeExtra("open_history");
+            mMainCalculator.transitionToEnd();
+            setNavIndex(1);
         }
 
         if (savedInstanceState != null) {
@@ -412,54 +416,31 @@ public class Calculator extends AppCompatActivity
     }
 
     private void setupModernNavigation() {
-        final View calculator = findViewById(R.id.nav_calculator);
-        final View history = findViewById(R.id.nav_history);
-        final View converter = findViewById(R.id.nav_converter);
-        final View settings = findViewById(R.id.nav_settings);
-
-        calculator.setOnClickListener(v -> {
-            if (mMainCalculator.getCurrentState() == R.id.end_state) {
-                mMainCalculator.transitionToStart();
+        final LiquidGlassBottomBar navBar = findViewById(R.id.bottom_navigation);
+        navBar.setOnTabSelectedListener(index -> {
+            if (index == 0) {
+                if (mMainCalculator.getCurrentState() == R.id.end_state) {
+                    mMainCalculator.transitionToStart();
+                }
+            } else if (index == 1) {
+                if (mMainCalculator.getCurrentState() != R.id.end_state) {
+                    mMainCalculator.transitionToEnd();
+                }
+            } else if (index == 2) {
+                startActivity(new Intent(this, ConverterActivity.class));
+            } else {
+                startActivity(new Intent(this, SettingsActivity.class));
             }
-            selectModernNav(R.id.nav_calculator);
         });
 
-        history.setOnClickListener(v -> {
-            if (mMainCalculator.getCurrentState() != R.id.end_state) {
-                mMainCalculator.transitionToEnd();
-            }
-            selectModernNav(R.id.nav_history);
-        });
-
-        converter.setOnClickListener(v ->
-                startActivity(new Intent(this, ConverterActivity.class)));
-
-        settings.setOnClickListener(v ->
-                startActivity(new Intent(this, SettingsActivity.class)));
-
-        selectModernNav(R.id.nav_calculator);
+        navBar.setSelectedIndex(
+                mMainCalculator.getCurrentState() == R.id.end_state ? 1 : 0, false);
     }
 
-    private void selectModernNav(int selectedId) {
-        int[] ids = {
-                R.id.nav_calculator,
-                R.id.nav_history,
-                R.id.nav_converter,
-                R.id.nav_settings
-        };
-        for (int id : ids) {
-            View item = findViewById(id);
-            boolean selected = id == selectedId;
-            item.setBackgroundResource(selected
-                    ? R.drawable.nav_item_selected
-                    : android.R.color.transparent);
-            item.animate()
-                    .scaleX(selected ? 1.0f : 0.94f)
-                    .scaleY(selected ? 1.0f : 0.94f)
-                    .alpha(selected ? 1.0f : 0.82f)
-                    .setDuration(180L)
-                    .setInterpolator(new android.view.animation.DecelerateInterpolator())
-                    .start();
+    private void setNavIndex(int index) {
+        final LiquidGlassBottomBar navBar = findViewById(R.id.bottom_navigation);
+        if (navBar != null) {
+            navBar.setSelectedIndex(index, true);
         }
     }
 
@@ -487,6 +468,10 @@ public class Calculator extends AppCompatActivity
                 mMainCalculator.getCurrentState() == R.id.end_state
                         ? View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
                         : View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
+
+        // Returning from Converter/Settings leaves the pill snapped back on the
+        // visible destination instead of stranded on a transient tab.
+        setNavIndex(mMainCalculator.getCurrentState() == R.id.end_state ? 1 : 0);
     }
 
     @Override

@@ -171,14 +171,26 @@ public class ConverterActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        findViewById(R.id.nav_calculator).setOnClickListener(v -> {
-            Intent i = new Intent(this, Calculator.class); i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); startActivity(i); finish();
+        LiquidGlassBottomBar navBar = findViewById(R.id.bottom_navigation);
+        navBar.setSelectedIndex(2, false);
+        navBar.setOnTabSelectedListener(index -> {
+            if (index == 0) {
+                Intent i = new Intent(this, Calculator.class); i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); startActivity(i); finish();
+            } else if (index == 1) {
+                Intent i = new Intent(this, Calculator.class); i.putExtra("open_history", true); i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); startActivity(i); finish();
+            } else if (index == 3) {
+                startActivity(new Intent(this, SettingsActivity.class));
+            }
         });
-        findViewById(R.id.nav_history).setOnClickListener(v -> {
-            Intent i = new Intent(this, Calculator.class); i.putExtra("open_history", true); i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); startActivity(i); finish();
-        });
-        findViewById(R.id.nav_converter).setBackgroundResource(R.drawable.nav_item_selected);
-        findViewById(R.id.nav_settings).setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        // Returning from Settings slides the pill back under Converter.
+        LiquidGlassBottomBar navBar = findViewById(R.id.bottom_navigation);
+        if (navBar != null) {
+            navBar.setSelectedIndex(2, true);
+        }
     }
 
     private void bindCategory(int id, Category value, String description) {
