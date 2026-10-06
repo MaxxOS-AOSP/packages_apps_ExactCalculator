@@ -11,4 +11,8 @@
         <attr name="stepTextSize" format="dimension" />
     </declare-styleable>
 
+    <attr name="calculatorDisplayStartColor" format="color" />
+    <attr name="calculatorDisplayEndColor" format="color" />
+    <attr name="calculatorFormulaTextColor" format="color" />
+    <attr name="calculatorResultTextColor" format="color" />
 </resources>

@@ -35,6 +35,7 @@
 
     <include
         android:id="@+id/advanced_pad"
+        android:visibility="gone"
         layout="@layout/advanced_pad"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -49,9 +50,16 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="@dimen/layout_input_pad_ratio"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/advanced_pad" />
+        app:layout_constraintTop_toBottomOf="@id/display"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation" />
+
+    <include
+        android:id="@+id/bottom_navigation"
+        layout="@layout/bottom_navigation"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <FrameLayout
         android:id="@+id/animation_helper"

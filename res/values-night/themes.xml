@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme" parent="Theme.Material3Expressive.DayNight">
+        <item name="colorPrimary">@color/modern_primary</item>
+        <item name="colorSecondary">@color/modern_primary</item>
+        <item name="colorTertiary">@color/modern_primary</item>
+        <item name="calculatorDisplayStartColor">#193C37</item>
+        <item name="calculatorDisplayEndColor">#0E1917</item>
+        <item name="calculatorFormulaTextColor">#83BDB3</item>
+        <item name="calculatorResultTextColor">#D9FFF7</item>
+        <item name="android:statusBarColor">@color/display_background_color</item>
+        <item name="android:navigationBarColor">?colorSurface</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

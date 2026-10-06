@@ -304,6 +304,7 @@ public class Calculator extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeUtils.apply(this);
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_calculator);
@@ -354,6 +355,7 @@ public class Calculator extends AppCompatActivity
             public void onTransitionStarted(MotionLayout motionLayout, int startId, int endId) {
                 if (startId == R.id.start_state) {
                     showHistoryFragment();
+                    selectModernNav(R.id.nav_history);
                 }
             }
 
@@ -366,6 +368,7 @@ public class Calculator extends AppCompatActivity
             public void onTransitionCompleted(MotionLayout motionLayout, int currentId) {
                 if (currentId == R.id.start_state) {
                     removeHistoryFragment();
+                    selectModernNav(R.id.nav_calculator);
                 }
             }
 
@@ -382,6 +385,10 @@ public class Calculator extends AppCompatActivity
         mFormulaText.addTextChangedListener(mFormulaTextWatcher);
         mDeleteButton.setOnLongClickListener(this);
 
+        // Modern floating navigation: keep the calculator workflow intact while
+        // exposing History, Converter and Settings as first-class destinations.
+        setupModernNavigation();
+
         if (savedInstanceState != null) {
             restoreInstanceState(savedInstanceState);
         } else {
@@ -390,6 +397,50 @@ public class Calculator extends AppCompatActivity
             onInverseToggled(false);
         }
         restoreDisplay();
+    }
+
+    private void setupModernNavigation() {
+        final View calculator = findViewById(R.id.nav_calculator);
+        final View history = findViewById(R.id.nav_history);
+        final View converter = findViewById(R.id.nav_converter);
+        final View settings = findViewById(R.id.nav_settings);
+
+        calculator.setOnClickListener(v -> {
+            if (mMainCalculator.getCurrentState() == R.id.end_state) {
+                mMainCalculator.transitionToStart();
+            }
+            selectModernNav(R.id.nav_calculator);
+        });
+
+        history.setOnClickListener(v -> {
+            if (mMainCalculator.getCurrentState() != R.id.end_state) {
+                mMainCalculator.transitionToEnd();
+            }
+            selectModernNav(R.id.nav_history);
+        });
+
+        converter.setOnClickListener(v ->
+                startActivity(new Intent(this, ConverterActivity.class)));
+
+        settings.setOnClickListener(v ->
+                startActivity(new Intent(this, SettingsActivity.class)));
+
+        selectModernNav(R.id.nav_calculator);
+    }
+
+    private void selectModernNav(int selectedId) {
+        int[] ids = {
+                R.id.nav_calculator,
+                R.id.nav_history,
+                R.id.nav_converter,
+                R.id.nav_settings
+        };
+        for (int id : ids) {
+            View item = findViewById(id);
+            item.setBackgroundResource(id == selectedId
+                    ? R.drawable.nav_item_selected
+                    : android.R.color.transparent);
+        }
     }
 
     @Override

@@ -30,6 +30,24 @@
         </activity>
 
         <activity
+            android:name=".ConverterActivity"
+            android:exported="false"
+            android:parentActivityName=".Calculator"
+            android:theme="@style/Theme.Calculator" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:parentActivityName=".Calculator"
+            android:theme="@style/Theme.Calculator" />
+
+        <activity
+            android:name=".AboutActivity"
+            android:exported="false"
+            android:parentActivityName=".SettingsActivity"
+            android:theme="@style/Theme.Calculator" />
+
+        <activity
             android:name=".Licenses"
             android:launchMode="singleTop"
             android:parentActivityName=".Calculator"

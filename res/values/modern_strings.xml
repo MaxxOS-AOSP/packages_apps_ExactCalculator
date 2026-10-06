@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_calculator">Calculator</string>
+    <string name="nav_history">History</string>
+    <string name="nav_converter">Converter</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_back">Back</string>
+
+    <string name="calculator_subtitle">Simple • Powerful • Everyday</string>
+    <string name="converter_title">Converter</string>
+    <string name="converter_subtitle">Convert anything easily</string>
+    <string name="converter_from">From</string>
+    <string name="category_length">Length</string>
+    <string name="category_weight">Weight</string>
+    <string name="category_temperature">Temperature</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_subtitle">Make Calculator feel like yours</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_old_style">Old Style</string>
+    <string name="settings_theme_note">The calculator follows the same soft, rounded Material design in both light and dark mode.</string>
+
+    <string name="about_settings_title">About MaxxOS Calculator</string>
+    <string name="about_settings_summary">MaxxOS edition • credits &amp; source</string>
+    <string name="about_title">About</string>
+    <string name="about_back">Back</string>
+    <string name="about_product_name">MaxxOS Calculator</string>
+    <string name="about_tagline">Simple • Powerful • Everyday</string>
+    <string name="about_for_maxxos">For MaxxOS</string>
+    <string name="about_app_section">Application</string>
+    <string name="about_version_format">Version %1$s</string>
+    <string name="about_version_unknown">Version information unavailable</string>
+    <string name="about_package">Package • com.android.calculator2</string>
+    <string name="about_os">Operating system • MaxxOS (AOSP-based)</string>
+    <string name="about_design_title">Designed for MaxxOS</string>
+    <string name="about_design_body">This calculator is designed and optimized for the MaxxOS experience, with a clean, expressive interface, rounded surfaces and optional Old Style theme.</string>
+    <string name="about_designed_by">Designed by Anshuman X</string>
+    <string name="about_designer_handle">@maxxcodebug</string>
+    <string name="about_credits_title">Open Source &amp; Credits</string>
+    <string name="about_credits_body">Built on the ExactCalculator open-source project and the Android open-source ecosystem.</string>
+    <string name="about_thanks_lineage">Special thanks to LineageOS</string>
+    <string name="about_thanks_open_source">And thanks to the wider open-source community and every contributor who makes projects like this possible.</string>
+    <string name="about_source_code">MaxxOS-AOSP / packages_apps_ExactCalculator</string>
+
+</resources>

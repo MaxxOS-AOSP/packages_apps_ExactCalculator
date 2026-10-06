@@ -7,11 +7,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="@dimen/history_divider_padding"
+    android:paddingTop="6dp"
+    android:paddingBottom="6dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
     android:clipChildren="false"
     android:clipToPadding="false"
     android:importantForAccessibility="no"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@drawable/history_card">
 
     <View
         android:id="@+id/history_divider"
@@ -19,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/history_divider_padding"
         android:layout_marginBottom="@dimen/history_divider_padding"
-        android:background="?android:attr/listDivider"
+        android:background="@android:color/transparent"
         android:importantForAccessibility="no" />
 
     <TextView
