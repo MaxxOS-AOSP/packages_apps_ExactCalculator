@@ -1,6 +1,6 @@
 # MaxxOS ExactCalculator – Advanced Converter Update
 
-This staging update keeps the MaxxOS Modern UI, Old Style theme, About/Settings pages, animated bottom navigation and glass navigation work, and expands Converter into a multi-category unit converter.
+This staging update keeps the MaxxOS Modern UI, Old Style theme, About/Settings pages, and expands Converter into a multi-category unit converter. The bottom navigation is an OriginSU-style liquid-glass floating pill (see `LiquidGlassBottomBar.java`): 64dp pill, surface-container tint, specular edge strokes, and a spring-driven sliding selection indicator with drag-to-select.
 
 ## Converter categories
 - Length

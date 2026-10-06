@@ -14,6 +14,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.calculator2.ui.navbar.GlassNavBridge;
+import com.android.calculator2.ui.navbar.GlassNavState;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ public class ConverterActivity extends AppCompatActivity {
     private Spinner fromSpinner;
     private Spinner toSpinner;
     private TextView categoryDescription;
+    private GlassNavState mNavState;
 
     private enum Category {
         LENGTH, AREA, VOLUME, WEIGHT, TEMPERATURE, SPEED, TIME,
@@ -171,14 +174,24 @@ public class ConverterActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        findViewById(R.id.nav_calculator).setOnClickListener(v -> {
-            Intent i = new Intent(this, Calculator.class); i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); startActivity(i); finish();
+        androidx.compose.ui.platform.ComposeView navHost = findViewById(R.id.bottom_navigation);
+        mNavState = GlassNavBridge.install(navHost, GlassNavBridge.calculatorTabs(), 2, index -> {
+            if (index == 0) {
+                Intent i = new Intent(this, Calculator.class); i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); startActivity(i); finish();
+            } else if (index == 1) {
+                Intent i = new Intent(this, Calculator.class); i.putExtra("open_history", true); i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); startActivity(i); finish();
+            } else if (index == 3) {
+                startActivity(new Intent(this, SettingsActivity.class));
+            }
         });
-        findViewById(R.id.nav_history).setOnClickListener(v -> {
-            Intent i = new Intent(this, Calculator.class); i.putExtra("open_history", true); i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); startActivity(i); finish();
-        });
-        findViewById(R.id.nav_converter).setBackgroundResource(R.drawable.nav_item_selected);
-        findViewById(R.id.nav_settings).setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        // Returning from Settings slides the pill back under Converter.
+        if (mNavState != null) {
+            mNavState.select(2);
+        }
     }
 
     private void bindCategory(int id, Category value, String description) {
