@@ -9,7 +9,8 @@
     <Transition
         motion:constraintSetEnd="@+id/end_state"
         motion:constraintSetStart="@+id/start_state"
-        motion:duration="1000"
+        motion:duration="360"
+        motion:motionInterpolator="easeInOut"
         motion:layoutDuringTransition="honorRequest">
         <OnSwipe
             motion:dragDirection="dragDown"

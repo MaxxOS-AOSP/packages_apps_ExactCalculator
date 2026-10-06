@@ -217,6 +217,8 @@ public class Calculator extends AppCompatActivity
     private CalculatorResult mResultText;
     private HorizontalScrollView mFormulaContainer;
     private MotionLayout mMainCalculator;
+    private boolean mAppliedVintageTheme;
+    private boolean mRecreatingForTheme;
 
     private TextView mInverseToggle;
     private TextView mModeToggle;
@@ -305,6 +307,7 @@ public class Calculator extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ThemeUtils.apply(this);
+        mAppliedVintageTheme = ThemeUtils.isVintage(this);
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_calculator);
@@ -389,6 +392,15 @@ public class Calculator extends AppCompatActivity
         // exposing History, Converter and Settings as first-class destinations.
         setupModernNavigation();
 
+        // Fragment state can be restored across a theme/night-mode recreation.
+        // Put MotionLayout back into the same visual state before the user can
+        // interact with the restored HistoryFragment. This avoids duplicate
+        // fragment transactions and crashes after changing themes.
+        if (getHistoryFragment() != null) {
+            mMainCalculator.transitionToState(R.id.end_state, 0);
+            selectModernNav(R.id.nav_history);
+        }
+
         if (savedInstanceState != null) {
             restoreInstanceState(savedInstanceState);
         } else {
@@ -437,15 +449,35 @@ public class Calculator extends AppCompatActivity
         };
         for (int id : ids) {
             View item = findViewById(id);
-            item.setBackgroundResource(id == selectedId
+            boolean selected = id == selectedId;
+            item.setBackgroundResource(selected
                     ? R.drawable.nav_item_selected
                     : android.R.color.transparent);
+            item.animate()
+                    .scaleX(selected ? 1.0f : 0.94f)
+                    .scaleY(selected ? 1.0f : 0.94f)
+                    .alpha(selected ? 1.0f : 0.82f)
+                    .setDuration(180L)
+                    .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                    .start();
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
+        // Settings is a separate Activity. If the vintage theme was changed there,
+        // recreate Calculator once when it comes back to the foreground so every
+        // calculator/history resource is inflated with the same theme.
+        boolean vintageNow = ThemeUtils.isVintage(this);
+        if (!isFinishing() && !mRecreatingForTheme && vintageNow != mAppliedVintageTheme) {
+            mRecreatingForTheme = true;
+            mAppliedVintageTheme = vintageNow;
+            recreate();
+            return;
+        }
+
         // If HistoryFragment is showing, hide the main Calculator elements from accessibility.
         // This is because Talkback does not use visibility as a cue for RelativeLayout elements,
         // and RelativeLayout is the base class of DragLayout.
@@ -1144,7 +1176,8 @@ public class Calculator extends AppCompatActivity
             return null;
         }
         final Fragment fragment = manager.findFragmentByTag(HistoryFragment.TAG);
-        return fragment == null || fragment.isRemoving() ? null : (HistoryFragment) fragment;
+        return fragment instanceof HistoryFragment && !fragment.isRemoving()
+                ? (HistoryFragment) fragment : null;
     }
 
     private void showHistoryFragment() {
