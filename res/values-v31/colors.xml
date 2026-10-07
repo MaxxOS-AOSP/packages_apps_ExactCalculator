@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dynamic launcher background: tracks the wallpaper palette and night
+         mode natively on API 31+, no themed-icons toggle needed. -->
+    <color name="app_icon_background">@android:color/system_accent1_400</color>
+</resources>

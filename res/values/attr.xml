@@ -11,4 +11,24 @@
         <attr name="stepTextSize" format="dimension" />
     </declare-styleable>
 
+    <attr name="calculatorDisplayStartColor" format="color" />
+    <attr name="calculatorDisplayEndColor" format="color" />
+    <attr name="calculatorFormulaTextColor" format="color" />
+    <attr name="calculatorResultTextColor" format="color" />
+
+    <declare-styleable name="IosButton">
+        <!-- True circle (square cell). False keeps the measured shape, e.g. the wide "0" stadium. -->
+        <attr name="iosCircle" format="boolean" />
+    </declare-styleable>
+
+    <!-- iOS keypad palette. Modern themes use fixed iOS colors; the vintage
+         theme maps these onto its own palette to preserve the old style. -->
+    <attr name="iosDigitBackground" format="color" />
+    <attr name="iosDigitForeground" format="color" />
+    <attr name="iosFuncBackground" format="color" />
+    <attr name="iosFuncForeground" format="color" />
+    <attr name="iosOperatorBackground" format="color" />
+    <attr name="iosOperatorForeground" format="color" />
+    <attr name="iosOperatorActiveBackground" format="color" />
+    <attr name="iosOperatorActiveForeground" format="color" />
 </resources>

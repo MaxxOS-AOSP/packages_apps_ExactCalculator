@@ -56,6 +56,14 @@
         <item name="android:onClick">onButtonClick</item>
         <item name="android:fontFeatureSettings">tnum, cv03, cv04</item>
         <item name="android:layout_marginHorizontal">@dimen/button_horizontal_margin</item>
+        <item name="cornerRadius">28dp</item>
+        <item name="android:minHeight">0dp</item>
+        <!-- Full-bleed background: default button insets shrink the fill
+             into an oval. -->
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
     </style>
 
     <style name="PadButtonStyle.Caps">
@@ -77,6 +85,34 @@
     <style name="PadButtonStyle.SmallText">
         <item name="android:textSize">@dimen/button_small_textsize</item>
         <item name="android:layout_marginHorizontal">@dimen/button_small_horizontal_margin</item>
+    </style>
+
+    <!-- iOS operator key: orange circle, white label; inverted while the
+         operator is pending (button selected). -->
+    <style name="PadButtonStyle.IosOperator" parent="PadButtonStyle">
+        <item name="backgroundTint">@color/ios_operator_tint</item>
+        <item name="android:textColor">@color/ios_operator_text</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+    </style>
+
+    <!-- iOS key containers. Colors resolve per theme via ios* attrs so the
+         vintage theme keeps its own palette (see themes.xml). -->
+    <style name="Theme.Button.IosNumeric">
+        <item name="colorContainer">?attr/iosDigitBackground</item>
+        <item name="colorOnContainer">?attr/iosDigitForeground</item>
+    </style>
+
+    <style name="Theme.Button.IosClear">
+        <item name="colorContainer">?attr/iosFuncBackground</item>
+        <item name="colorOnContainer">?attr/iosFuncForeground</item>
+    </style>
+
+    <style name="Theme.Button.IosAction">
+        <item name="colorContainer">?attr/iosOperatorBackground</item>
+        <item name="colorOnContainer">?attr/iosOperatorForeground</item>
     </style>
 
     <style name="PadLayoutStyle">

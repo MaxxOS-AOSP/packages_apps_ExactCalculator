@@ -13,6 +13,12 @@
     <clip-path
         android:pathData="M0,0h108v108h-108z"/>
     <path
+        android:pathData="M42,30L66,30A4,4 0,0 1,70 34L70,74A4,4 0,0 1,66 78L42,78A4,4 0,0 1,38 74L38,34A4,4 0,0 1,42 30z"
+        android:fillColor="#551E22"/>
+    <path
+        android:pathData="M38,34C38,31.791 39.791,30 42,30H66C68.209,30 70,31.791 70,34V46H38V34Z"
+        android:fillColor="#2A3232"/>
+    <path
         android:pathData="M41,48L47,48A1,1 0,0 1,48 49L48,55A1,1 0,0 1,47 56L41,56A1,1 0,0 1,40 55L40,49A1,1 0,0 1,41 48z"
         android:fillColor="#ffffff"/>
     <path

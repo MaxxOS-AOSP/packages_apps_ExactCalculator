@@ -108,6 +108,8 @@
     <string name="eq" translatable="false">=</string>
     <!-- Clear button to clear the currently entered expression. [CHAR_LIMIT=1] -->
     <string name="clr" translatable="false">c</string>
+    <!-- iOS-style all-clear key. [CHAR_LIMIT=2] -->
+    <string name="ac" translatable="false">AC</string>
     <!--
       Announced when all characters are removed from Formula, e.g. after clear. [CHAR_LIMIT=NONE]
       -->

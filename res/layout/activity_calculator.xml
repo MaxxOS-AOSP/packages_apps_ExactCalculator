@@ -13,16 +13,6 @@
     android:orientation="vertical"
     app:layoutDescription="@xml/activity_calculator_scene">
 
-    <FrameLayout
-        android:id="@+id/history_frame"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@color/display_background_color"
-        app:layout_constraintBottom_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <include
         android:id="@+id/display"
         layout="@layout/display_two_line"
@@ -35,6 +25,7 @@
 
     <include
         android:id="@+id/advanced_pad"
+        android:visibility="gone"
         layout="@layout/advanced_pad"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -49,9 +40,29 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="@dimen/layout_input_pad_ratio"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/advanced_pad" />
+        app:layout_constraintTop_toBottomOf="@id/display"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation" />
+
+    <FrameLayout
+        android:id="@+id/history_frame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <include
+        android:id="@+id/bottom_navigation"
+        layout="@layout/bottom_navigation"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_marginBottom="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <FrameLayout
         android:id="@+id/animation_helper"
