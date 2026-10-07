@@ -17,9 +17,10 @@ public class AboutActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ThemeUtils.apply(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
+
+        applyAppColors();
 
         ImageView back = findViewById(R.id.about_back);
         back.setOnClickListener(v -> finish());
@@ -34,6 +35,33 @@ public class AboutActivity extends AppCompatActivity {
 
         findViewById(R.id.about_source_card).setOnClickListener(v -> openSource());
         findViewById(R.id.about_github_icon).setOnClickListener(v -> openSource());
+    }
+
+    /** App colors (black/orange iOS look, or its light configuration). */
+    private void applyAppColors() {
+        final boolean night = UiModes.isNight(this);
+        final int title = night ? 0xFFFFFFFF : 0xFF000000;
+        final int gray = night ? 0xFFAEAEB2 : 0xFF6E6E6E;
+        final int orange = 0xFFFF9F0A;
+
+        ((ImageView) findViewById(R.id.about_back)).setImageTintList(
+                android.content.res.ColorStateList.valueOf(title));
+
+        final com.google.android.material.card.MaterialCardView header =
+                findViewById(R.id.about_header_card);
+        header.setCardBackgroundColor(night ? 0xFF1C1C1E : 0xFFFFFFFF);
+        ((TextView) findViewById(R.id.about_product_name)).setTextColor(title);
+        ((TextView) findViewById(R.id.about_tagline)).setTextColor(gray);
+
+        final TextView badge = findViewById(R.id.about_badge);
+        final android.graphics.drawable.GradientDrawable badgeBg =
+                new android.graphics.drawable.GradientDrawable();
+        badgeBg.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+        badgeBg.setColor(orange);
+        final float density = getResources().getDisplayMetrics().density;
+        badgeBg.setCornerRadius(24 * density);
+        badge.setBackground(badgeBg);
+        badge.setTextColor(night ? 0xFF000000 : 0xFFFFFFFF);
     }
 
     private void openSource() {

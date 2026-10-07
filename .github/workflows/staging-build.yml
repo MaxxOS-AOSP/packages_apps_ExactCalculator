@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -26,16 +28,15 @@ jobs:
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon
 
-      - name: Find generated APK
+      - name: Stage APK
         run: |
-          echo "Searching for generated APK..."
-          find . -type f -name "*.apk" -print
+          mkdir -p ./artifacts
+          cp $(find . -type f -path "*build/outputs/apk/debug/*.apk" | head -1) ./artifacts/MaxxOS-ExactCalculator.apk
+          ls -la ./artifacts
 
-      - name: Upload debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: MaxxOS-ExactCalculator-staging-${{ github.run_number }}
-          path: |
-            **/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
-          retention-days: 14
+      - name: Publish APK to rolling staging release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view staging >/dev/null 2>&1 || gh release create staging --title "Staging build" --notes "Latest staging APK (direct .apk download, no zip)." --prerelease
+          gh release upload staging ./artifacts/MaxxOS-ExactCalculator.apk --clobber

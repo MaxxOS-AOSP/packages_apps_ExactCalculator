@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-     SPDX-FileCopyrightText: 2016 The Android Open Source Project
-     SPDX-License-Identifier: Apache-2.0
--->
+<!-- iOS empty state: centered gray text over the glass sheet. -->
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/empty_history_view"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:drawableTop="@drawable/ic_history"
+        android:gravity="center"
         android:text="@string/no_history"
-        android:textSize="20sp" />
+        android:textSize="19sp"
+        android:textColor="?attr/calculatorFormulaTextColor" />
 
 </FrameLayout>

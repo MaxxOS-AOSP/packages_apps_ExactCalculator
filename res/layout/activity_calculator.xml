@@ -13,16 +13,6 @@
     android:orientation="vertical"
     app:layoutDescription="@xml/activity_calculator_scene">
 
-    <FrameLayout
-        android:id="@+id/history_frame"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@color/display_background_color"
-        app:layout_constraintBottom_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <include
         android:id="@+id/display"
         layout="@layout/display_two_line"
@@ -53,6 +43,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/display"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation" />
+
+    <FrameLayout
+        android:id="@+id/history_frame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <include
         android:id="@+id/bottom_navigation"

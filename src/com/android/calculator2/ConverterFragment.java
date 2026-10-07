@@ -3,34 +3,38 @@
  */
 package com.android.calculator2;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
-import com.android.calculator2.ui.navbar.GlassNavBridge;
-import com.android.calculator2.ui.navbar.GlassNavState;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.card.MaterialCardView;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
-/** MaxxOS advanced unit converter. Rates for currencies are bundled reference rates. */
-public class ConverterActivity extends AppCompatActivity {
+/** MaxxOS advanced unit converter, hosted in-place by Calculator. Rates for currencies are bundled reference rates. */
+public class ConverterFragment extends Fragment {
+    public static final String TAG = "ConverterFragment";
+
     private android.widget.EditText input;
     private TextView result;
     private Spinner fromSpinner;
     private Spinner toSpinner;
     private TextView categoryDescription;
-    private GlassNavState mNavState;
 
     private enum Category {
         LENGTH, AREA, VOLUME, WEIGHT, TEMPERATURE, SPEED, TIME,
@@ -131,39 +135,42 @@ public class ConverterActivity extends AppCompatActivity {
         });
     }
 
-    @Override protected void onCreate(Bundle savedInstanceState) {
-        ThemeUtils.apply(this);
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_converter);
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
+        final View view = inflater.inflate(
+                R.layout.fragment_converter, container, false /* attachToRoot */);
 
-        input = findViewById(R.id.converter_input);
-        result = findViewById(R.id.converter_result);
-        fromSpinner = findViewById(R.id.converter_from_unit);
-        toSpinner = findViewById(R.id.converter_to_unit);
-        categoryDescription = findViewById(R.id.converter_category_description);
+        input = view.findViewById(R.id.converter_input);
+        result = view.findViewById(R.id.converter_result);
+        fromSpinner = view.findViewById(R.id.converter_from_unit);
+        toSpinner = view.findViewById(R.id.converter_to_unit);
+        categoryDescription = view.findViewById(R.id.converter_category_description);
 
-        findViewById(R.id.converter_back).setOnClickListener(v -> finish());
-        setupNavigation();
+        view.findViewById(R.id.converter_back)
+                .setOnClickListener(v -> requireActivity().onBackPressed());
 
-        bindCategory(R.id.category_length, Category.LENGTH, "Distance, metric and imperial length");
-        bindCategory(R.id.category_area, Category.AREA, "Surface area and land measurements");
-        bindCategory(R.id.category_volume, Category.VOLUME, "Liquid and cubic volume");
-        bindCategory(R.id.category_weight, Category.WEIGHT, "Mass and everyday weight");
-        bindCategory(R.id.category_temperature, Category.TEMPERATURE, "Celsius, Fahrenheit and Kelvin");
-        bindCategory(R.id.category_speed, Category.SPEED, "Road, nautical and SI speed");
-        bindCategory(R.id.category_time, Category.TIME, "Seconds through years");
-        bindCategory(R.id.category_pressure, Category.PRESSURE, "Pressure and atmospheric units");
-        bindCategory(R.id.category_energy, Category.ENERGY, "Energy, calories and electricity");
-        bindCategory(R.id.category_power, Category.POWER, "Watts and horsepower");
-        bindCategory(R.id.category_data, Category.DATA, "Digital storage and transfer sizes");
-        bindCategory(R.id.category_angle, Category.ANGLE, "Degrees, radians and angular units");
-        bindCategory(R.id.category_frequency, Category.FREQUENCY, "Cycles per second");
-        bindCategory(R.id.category_force, Category.FORCE, "Newton and force units");
-        bindCategory(R.id.category_currency, Category.CURRENCY, "Major currencies using bundled reference rates");
+        applyIosPalette(view);
+
+        bindCategory(view, R.id.category_length, Category.LENGTH, "Distance, metric and imperial length");
+        bindCategory(view, R.id.category_area, Category.AREA, "Surface area and land measurements");
+        bindCategory(view, R.id.category_volume, Category.VOLUME, "Liquid and cubic volume");
+        bindCategory(view, R.id.category_weight, Category.WEIGHT, "Mass and everyday weight");
+        bindCategory(view, R.id.category_temperature, Category.TEMPERATURE, "Celsius, Fahrenheit and Kelvin");
+        bindCategory(view, R.id.category_speed, Category.SPEED, "Road, nautical and SI speed");
+        bindCategory(view, R.id.category_time, Category.TIME, "Seconds through years");
+        bindCategory(view, R.id.category_pressure, Category.PRESSURE, "Pressure and atmospheric units");
+        bindCategory(view, R.id.category_energy, Category.ENERGY, "Energy, calories and electricity");
+        bindCategory(view, R.id.category_power, Category.POWER, "Watts and horsepower");
+        bindCategory(view, R.id.category_data, Category.DATA, "Digital storage and transfer sizes");
+        bindCategory(view, R.id.category_angle, Category.ANGLE, "Degrees, radians and angular units");
+        bindCategory(view, R.id.category_frequency, Category.FREQUENCY, "Cycles per second");
+        bindCategory(view, R.id.category_force, Category.FORCE, "Newton and force units");
+        bindCategory(view, R.id.category_currency, Category.CURRENCY, "Major currencies using bundled reference rates");
 
         fromSpinner.setOnItemSelectedListener(new SimpleItemListener() { @Override public void selected() { calculate(); } });
         toSpinner.setOnItemSelectedListener(new SimpleItemListener() { @Override public void selected() { calculate(); } });
-        findViewById(R.id.converter_swap).setOnClickListener(v -> swapUnits());
+        view.findViewById(R.id.converter_swap).setOnClickListener(v -> swapUnits());
 
         input.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
@@ -171,31 +178,108 @@ public class ConverterActivity extends AppCompatActivity {
             @Override public void afterTextChanged(Editable e) {}
         });
         select(Category.LENGTH, "Distance, metric and imperial length");
+        return view;
     }
 
-    private void setupNavigation() {
-        androidx.compose.ui.platform.ComposeView navHost = findViewById(R.id.bottom_navigation);
-        mNavState = GlassNavBridge.install(navHost, GlassNavBridge.calculatorTabs(), 2, index -> {
-            if (index == 0) {
-                Intent i = new Intent(this, Calculator.class); i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); startActivity(i); finish();
-            } else if (index == 1) {
-                Intent i = new Intent(this, Calculator.class); i.putExtra("open_history", true); i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); startActivity(i); finish();
-            } else if (index == 3) {
-                startActivity(new Intent(this, SettingsActivity.class));
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        // Pager-style enter: slide in from the travel side (right going up
+        // the tabs, left going down) like a sideways swipe.
+        final Bundle args = getArguments();
+        final boolean fromRight = args == null || args.getBoolean("slide_from_right", true);
+        view.getViewTreeObserver().addOnPreDrawListener(
+                new android.view.ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                if (view.getWidth() == 0) {
+                    return true;
+                }
+                view.getViewTreeObserver().removeOnPreDrawListener(this);
+                view.setTranslationX(fromRight ? view.getWidth() : -view.getWidth());
+                view.animate()
+                        .translationX(0f)
+                        .setDuration(320)
+                        .setInterpolator(
+                                new android.view.animation.DecelerateInterpolator())
+                        .start();
+                return true;
             }
         });
     }
 
-    @Override protected void onResume() {
-        super.onResume();
-        // Returning from Settings slides the pill back under Converter.
-        if (mNavState != null) {
-            mNavState.select(2);
-        }
+    private void bindCategory(View root, int id, Category value, String description) {
+        root.findViewById(id).setOnClickListener(v -> {
+            final MaterialButtonToggleGroup group =
+                    root.findViewById(R.id.converter_categories);
+            if (group != null) {
+                group.check(id);
+            }
+            select(value, description);
+        });
     }
 
-    private void bindCategory(int id, Category value, String description) {
-        findViewById(id).setOnClickListener(v -> select(value, description));
+    /** iOS palette (dark keypad look, or its light configuration). */
+    private void applyIosPalette(View root) {
+        final boolean night = UiModes.isNight(requireContext());
+        final int canvas = night ? 0xFF000000 : 0xFFF2F2F7;
+        final int cardBg = night ? 0xFF1C1C1E : 0xFFFFFFFF;
+        final int cardEdge = night ? 0xFF2C2C2E : 0xFFD1D1D6;
+        final int title = night ? 0xFFFFFFFF : 0xFF000000;
+        final int gray = night ? 0xFFAEAEB2 : 0xFF6E6E6E;
+        final int orange = 0xFFFF9F0A;
+
+        root.findViewById(R.id.converter_root).setBackgroundColor(canvas);
+        ((android.widget.TextView) root.findViewById(R.id.converter_title)).setTextColor(title);
+        ((android.widget.TextView) root.findViewById(R.id.converter_subtitle)).setTextColor(gray);
+        ((android.widget.TextView) root.findViewById(R.id.converter_category_description))
+                .setTextColor(gray);
+        ((android.widget.TextView) root.findViewById(R.id.converter_from_label)).setTextColor(gray);
+        ((android.widget.TextView) root.findViewById(R.id.converter_to_label)).setTextColor(gray);
+        input.setTextColor(title);
+        input.setHintTextColor(gray);
+        result.setTextColor(title);
+
+        final android.widget.ImageButton back =
+                root.findViewById(R.id.converter_back);
+        back.setImageTintList(android.content.res.ColorStateList.valueOf(title));
+        final android.widget.ImageButton more = root.findViewById(R.id.converter_more);
+        more.setImageTintList(android.content.res.ColorStateList.valueOf(title));
+
+        final MaterialCardView card = root.findViewById(R.id.converter_card);
+        card.setCardBackgroundColor(cardBg);
+        card.setStrokeColor(cardEdge);
+
+        final android.content.res.ColorStateList orangeTint =
+                android.content.res.ColorStateList.valueOf(orange);
+        fromSpinner.setBackgroundTintList(orangeTint);
+        toSpinner.setBackgroundTintList(orangeTint);
+
+        final MaterialButton swap = root.findViewById(R.id.converter_swap);
+        swap.setBackgroundColor(orange);
+        swap.setTextColor(0xFFFFFFFF);
+
+        final MaterialButtonToggleGroup group = root.findViewById(R.id.converter_categories);
+        group.addOnButtonCheckedListener((g, checkedId, isChecked) -> paintChips(group));
+        paintChips(group);
+    }
+
+    /** Orange selected chip; unselected chips follow the theme. */
+    private void paintChips(MaterialButtonToggleGroup group) {
+        final boolean night = UiModes.isNight(requireContext());
+        final int chipOff = night ? 0xFF1C1C1E : 0xFFFFFFFF;
+        final int chipTextOff = night ? 0xFFAEAEB2 : 0xFF3A3A3C;
+        final int checkedId = group.getCheckedButtonId();
+        for (int i = 0; i < group.getChildCount(); i++) {
+            final android.view.View child = group.getChildAt(i);
+            if (!(child instanceof MaterialButton)) {
+                continue;
+            }
+            final MaterialButton chip = (MaterialButton) child;
+            final boolean checked = chip.getId() == checkedId;
+            chip.setBackgroundColor(checked ? 0xFFFF9F0A : chipOff);
+            chip.setTextColor(checked ? 0xFFFFFFFF : chipTextOff);
+        }
     }
 
     private void select(Category value, String description) {
@@ -204,7 +288,16 @@ public class ConverterActivity extends AppCompatActivity {
         Unit[] units = UNITS.get(value);
         ArrayList<String> labels = new ArrayList<>();
         for (Unit u : units) labels.add(u.label);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, labels);
+        ArrayAdapter<String> adapter;
+        if (UiModes.isNight(requireContext())) {
+            adapter = new ArrayAdapter<>(
+                    requireContext(), R.layout.spinner_item_dark, labels);
+            adapter.setDropDownViewResource(R.layout.spinner_dropdown_dark);
+        } else {
+            adapter = new ArrayAdapter<>(
+                    requireContext(), R.layout.spinner_item_light, labels);
+            adapter.setDropDownViewResource(R.layout.spinner_dropdown_light);
+        }
         updatingSpinners = true;
         fromSpinner.setAdapter(adapter);
         toSpinner.setAdapter(adapter);

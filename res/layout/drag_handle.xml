@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-     SPDX-FileCopyrightText: 2023 The LineageOS Project
-     SPDX-License-Identifier: Apache-2.0
--->
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Strip between keys and display: history shortcut. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/drag_handle_view"
-    android:layout_width="24.0dip"
-    android:layout_height="4.0dip"
-    android:layout_gravity="bottom|center"
-    android:layout_marginBottom="@dimen/drag_handle_margin"
-    android:layout_marginTop="@dimen/drag_handle_margin"
-    android:clickable="false"
-    android:importantForAccessibility="no"
-    android:src="@drawable/drag_handle"
-    app:tint="?android:textColorSecondary" />
+    android:layout_width="match_parent"
+    android:layout_height="48dp">
+
+    <ImageButton
+        android:id="@+id/history_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="end|center_vertical"
+        android:layout_marginEnd="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/title_history"
+        android:onClick="onHistoryClick"
+        android:src="@drawable/ic_history"
+        app:tint="?attr/calculatorFormulaTextColor" />
+
+</FrameLayout>

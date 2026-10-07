@@ -61,36 +61,36 @@ class GlassNavState(initial: Int) {
     }
 }
 
-private val CalculatorLightScheme = lightColorScheme(
-    primary = Color(0xFF1E6258),
+private val IosGlassScheme = darkColorScheme(
+    primary = Color(0xFFFF9F0A),
     onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFFB6E1D8),
-    onPrimaryContainer = Color(0xFF00201B),
-    surface = Color(0xFFFBFDFB),
-    onSurface = Color(0xFF191C1C),
-    surfaceContainer = Color(0xFFF3EDE7),
-    surfaceContainerHigh = Color(0xFFECE6E1),
-    surfaceVariant = Color(0xFFDBE5E1),
-    onSurfaceVariant = Color(0xFF3F4947),
+    primaryContainer = Color(0xFFFF9F0A),
+    onPrimaryContainer = Color(0xFF000000),
+    surface = Color(0xFF000000),
+    onSurface = Color(0xFFFFFFFF),
+    surfaceContainer = Color(0xFF1C1C1E),
+    surfaceContainerHigh = Color(0xFF2C2C2E),
+    surfaceVariant = Color(0xFF3A3A3C),
+    onSurfaceVariant = Color(0xFFAEAEB2),
 )
 
-private val CalculatorDarkScheme = darkColorScheme(
-    primary = Color(0xFF7ED4C5),
-    onPrimary = Color(0xFF003731),
-    primaryContainer = Color(0xFF005048),
-    onPrimaryContainer = Color(0xFF9CF1E3),
-    surface = Color(0xFF131313),
-    onSurface = Color(0xFFE4E2E1),
-    surfaceContainer = Color(0xFF1F1B16),
-    surfaceContainerHigh = Color(0xFF2A2520),
-    surfaceVariant = Color(0xFF3F4947),
-    onSurfaceVariant = Color(0xFFBEC9C6),
+private val IosGlassLightScheme = lightColorScheme(
+    primary = Color(0xFFFF9F0A),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFFF9F0A),
+    onPrimaryContainer = Color(0xFFFFFFFF),
+    surface = Color(0xFFF2F2F7),
+    onSurface = Color(0xFF000000),
+    surfaceContainer = Color(0xFFFFFFFF),
+    surfaceContainerHigh = Color(0xFFE8E8ED),
+    surfaceVariant = Color(0xFFD1D1D6),
+    onSurfaceVariant = Color(0xFF6E6E6E),
 )
 
 @Composable
 private fun CalculatorGlassTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = if (isSystemInDarkTheme()) CalculatorDarkScheme else CalculatorLightScheme,
+        colorScheme = if (isSystemInDarkTheme()) IosGlassScheme else IosGlassLightScheme,
         content = content,
     )
 }
@@ -102,7 +102,7 @@ private fun CalculatorNavBar(
     backdrop: Backdrop,
     modifier: Modifier = Modifier,
 ) {
-    CalculatorGlassTheme {
+    CalculatorGlassTheme() {
         Box(
             modifier = modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center,
@@ -146,7 +146,6 @@ object GlassNavBridge {
     @JvmStatic
     fun calculatorTabs(): List<NavTab> = listOf(
         NavTab(R.drawable.ic_nav_calculator, R.string.nav_calculator),
-        NavTab(R.drawable.ic_nav_history, R.string.nav_history),
         NavTab(R.drawable.ic_nav_converter, R.string.nav_converter),
         NavTab(R.drawable.ic_nav_settings, R.string.nav_settings),
     )
@@ -154,15 +153,17 @@ object GlassNavBridge {
     /**
      * Installs the exact OriginSU floating bar into [host]. Returns the
      * shared selection state: call [GlassNavState.select] to sync external
-     * navigation; taps arrive through [listener].
+     * navigation; taps arrive through [listener]. Returns null when [host]
+     * is null (layout variants without the pill).
      */
     @JvmStatic
     fun install(
-        host: ComposeView,
+        host: ComposeView?,
         tabs: List<NavTab>,
         initial: Int,
         listener: NavSelectionListener,
-    ): GlassNavState {
+    ): GlassNavState? {
+        if (host == null) return null
         val state = GlassNavState(initial)
         state.listener = listener
         val capture = SnapshotCapture(host)

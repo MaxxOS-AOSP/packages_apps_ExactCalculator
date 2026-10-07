@@ -342,6 +342,12 @@ public class CalculatorResult extends AlignedTextView implements MenuItem.OnMenu
             final CalculatorExpr expr = mEvaluator.getExpr(mIndex);
             if (expr != null && expr.hasInterestingOps()) {
                 if (mEvaluationRequest == SHOULD_REQUIRE) {
+                    // Measurement may not have completed (e.g. item laid out
+                    // at zero width inside an animating sheet); a later
+                    // layout pass will retry instead of crashing here.
+                    if (getMaxChars() == 0) {
+                        return;
+                    }
                     mEvaluator.requireResult(mIndex, mEvaluationListener, this);
                 } else {
                     mEvaluator.evaluateAndNotify(mIndex, mEvaluationListener, this);

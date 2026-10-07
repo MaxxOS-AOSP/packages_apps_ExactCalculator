@@ -53,6 +53,11 @@ class SnapshotBackdrop : Backdrop {
         downscaleFactor: Int,
     ) {
         val frame = frame ?: return
+        // The capture pool may drop buffers on resize; never draw a dead
+        // bitmap (the render thread can lag one frame behind).
+        if (frame.bitmap.isRecycled) {
+            return
+        }
         val image = frame.image
         val margin = frame.marginPx
         drawImage(
@@ -107,9 +112,11 @@ class SnapshotCapture(private val host: View) {
     }
 
     private fun recycle() {
-        bitmap?.recycle()
+        // Never call Bitmap.recycle() here: the published Frame wraps one of
+        // these buffers and the render thread may still reference it after a
+        // resize (e.g. sheet open/close animations resizing a glass host).
+        // Dropping the refs lets GC free the native memory safely instead.
         bitmap = null
-        scratch?.recycle()
         scratch = null
         image = null
     }

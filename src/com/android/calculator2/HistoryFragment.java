@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -61,26 +60,53 @@ public class HistoryFragment extends Fragment {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setAdapter(mAdapter);
 
-        final Toolbar toolbar = view.findViewById(R.id.history_toolbar);
-        toolbar.inflateMenu(R.menu.fragment_history);
-        toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.menu_clear_history) {
+        final View close = view.findViewById(R.id.history_close);
+        if (close != null) {
+            // Single close path via back press (which plays the slide-down
+            // once); no nested animateClose here.
+            close.setOnClickListener(v -> getActivity().onBackPressed());
+        }
+        final View clear = view.findViewById(R.id.history_clear);
+        if (clear != null) {
+            clear.setOnClickListener(v -> {
                 final Calculator calculator = (Calculator) getActivity();
                 AlertDialogFragment.showMessageDialog(calculator, "" /* title */,
                         getString(R.string.dialog_clear),
                         getString(R.string.menu_clear_history),
                         CLEAR_DIALOG_TAG);
-                return true;
-            }
-            return onOptionsItemSelected(item);
-        });
-        toolbar.setNavigationOnClickListener(v -> getActivity().onBackPressed());
+            });
+        }
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Guaranteed bottom slide, driven by the sheet itself. Wait for the
+        // first real measurement: View.post() can run pre-layout (height 0
+        // -> no visible slide), onPreDraw cannot.
+        final View sheet = view.findViewById(R.id.history_sheet);
+        if (sheet != null) {
+            sheet.getViewTreeObserver().addOnPreDrawListener(
+                    new android.view.ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    if (sheet.getHeight() == 0) {
+                        return true;
+                    }
+                    sheet.getViewTreeObserver().removeOnPreDrawListener(this);
+                    sheet.setTranslationY(sheet.getHeight());
+                    sheet.animate()
+                            .translationY(0f)
+                            .setDuration(320)
+                            .setInterpolator(
+                                    new android.view.animation.DecelerateInterpolator())
+                            .start();
+                    return true;
+                }
+            });
+        }
 
         final Calculator activity = (Calculator) getActivity();
         mEvaluator = Evaluator.getInstance(activity);
@@ -121,6 +147,39 @@ public class HistoryFragment extends Fragment {
             // Note that the view is destroyed when the fragment backstack is popped, so
             // these are essentially called when the DragLayout is closed.
             mEvaluator.cancelNonMain();
+        }
+    }
+
+    /** Slide the sheet down, then run [after]. Used for X/back close. */
+    public void animateClose(Runnable after) {
+        final View root = getView();
+        final View sheet = root == null ? null : root.findViewById(R.id.history_sheet);
+        if (sheet == null) {
+            if (after != null) {
+                after.run();
+            }
+            return;
+        }
+        sheet.animate()
+                .translationY(sheet.getHeight())
+                .setDuration(240)
+                .setInterpolator(new android.view.animation.AccelerateInterpolator())
+                .withEndAction(after)
+                .start();
+    }
+
+    /** Cancel a pending close slide and snap the sheet back (reopen race). */
+    public void cancelClose() {
+        final View root = getView();
+        if (root == null) {
+            return;
+        }
+        root.animate().cancel();
+        root.setVisibility(View.VISIBLE);
+        final View sheet = root.findViewById(R.id.history_sheet);
+        if (sheet != null) {
+            sheet.animate().cancel();
+            sheet.setTranslationY(0f);
         }
     }
 

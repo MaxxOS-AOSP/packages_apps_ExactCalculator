@@ -23,7 +23,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.RenderEffect;
+import android.graphics.Shader;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
@@ -220,13 +223,30 @@ public class Calculator extends AppCompatActivity
     private CalculatorResult mResultText;
     private HorizontalScrollView mFormulaContainer;
     private MotionLayout mMainCalculator;
-    private boolean mAppliedVintageTheme;
-    private boolean mRecreatingForTheme;
 
     private TextView mInverseToggle;
     private TextView mModeToggle;
 
     private GlassNavState mNavState;
+
+    /** True while the in-place converter panel is shown. */
+    private boolean mConverterShown;
+
+    /** True while the in-place settings panel is shown. */
+    private boolean mSettingsShown;
+
+    /** True while the history sheet is playing its close slide. */
+    private boolean mHistoryClosing;
+
+    /** Current pager tab: 0 calculator, 1 converter, 2 settings. */
+    private int mCurrentTab;
+
+    /** Swipe-nav anchor point. */
+    private float mSwipeDownX;
+    private float mSwipeDownY;
+
+    /** Currently pending binary operator key, shown inverted iOS-style. */
+    private View mPendingOperator;
 
     private View[] mInvertibleButtons;
     private View[] mInverseButtons;
@@ -311,12 +331,15 @@ public class Calculator extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ThemeUtils.apply(this);
-        mAppliedVintageTheme = ThemeUtils.isVintage(this);
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_calculator);
         setupEdgeToEdge();
+        // iOS look: no title header; canvas follows the system theme.
+        findViewById(R.id.toolbar).setVisibility(View.GONE);
+        final int canvas = UiModes.isNight(this) ? Color.BLACK : 0xFFF2F2F7;
+        findViewById(R.id.main_calculator).setBackgroundColor(canvas);
+        findViewById(R.id.input_pad).setBackgroundColor(canvas);
         setSupportActionBar(findViewById(R.id.toolbar));
 
         // Hide all default options in the ActionBar.
@@ -361,9 +384,19 @@ public class Calculator extends AppCompatActivity
         mMainCalculator.setTransitionListener(new MotionLayout.TransitionListener() {
             @Override
             public void onTransitionStarted(MotionLayout motionLayout, int startId, int endId) {
-                if (startId == R.id.start_state) {
+                if (startId == R.id.start_state && endId == R.id.end_state) {
+                    setHistoryBlur(true);
                     showHistoryFragment();
-                    setNavIndex(1);
+                } else if (startId == R.id.end_state && endId == R.id.start_state) {
+                    // Swipe-to-close: pill back and blur off instantly, sheet
+                    // hidden so it doesn't ride the collapsing container.
+                    mHistoryClosing = true;
+                    setNavIndex(0);
+                    setHistoryBlur(false);
+                    final HistoryFragment historyFragment = getHistoryFragment();
+                    if (historyFragment != null && historyFragment.getView() != null) {
+                        historyFragment.getView().setVisibility(View.INVISIBLE);
+                    }
                 }
             }
 
@@ -375,8 +408,14 @@ public class Calculator extends AppCompatActivity
             @Override
             public void onTransitionCompleted(MotionLayout motionLayout, int currentId) {
                 if (currentId == R.id.start_state) {
+                    mHistoryClosing = false;
+                    removePanelFragments();
+                    resetCalculatorShift();
                     removeHistoryFragment();
                     setNavIndex(0);
+                    // Restore the swipeable history transition for next time.
+                    mMainCalculator.setTransition(
+                            R.id.start_state, R.id.end_state);
                 }
             }
 
@@ -403,11 +442,19 @@ public class Calculator extends AppCompatActivity
         // fragment transactions and crashes after changing themes.
         if (getHistoryFragment() != null) {
             mMainCalculator.transitionToState(R.id.end_state, 0);
+        } else if (getConverterFragment() != null) {
+            mConverterShown = true;
+            mMainCalculator.setTransition(R.id.start_state, R.id.panel_state);
+            mMainCalculator.jumpToState(R.id.panel_state);
             setNavIndex(1);
+        } else if (getSettingsFragment() != null) {
+            mSettingsShown = true;
+            mMainCalculator.setTransition(R.id.start_state, R.id.panel_state);
+            mMainCalculator.jumpToState(R.id.panel_state);
+            setNavIndex(2);
         } else if (getIntent() != null && getIntent().getBooleanExtra("open_history", false)) {
             getIntent().removeExtra("open_history");
             mMainCalculator.transitionToEnd();
-            setNavIndex(1);
         }
 
         if (savedInstanceState != null) {
@@ -422,23 +469,185 @@ public class Calculator extends AppCompatActivity
 
     private void setupModernNavigation() {
         final ComposeView navHost = findViewById(R.id.bottom_navigation);
+        if (navHost == null) {
+            // Layout variants without the pill (e.g. landscape).
+            return;
+        }
         mNavState = GlassNavBridge.install(navHost, GlassNavBridge.calculatorTabs(),
-                mMainCalculator.getCurrentState() == R.id.end_state ? 1 : 0,
+                0,
                 index -> {
             if (index == 0) {
-                if (mMainCalculator.getCurrentState() == R.id.end_state) {
-                    mMainCalculator.transitionToStart();
-                }
+                closePanelsToCalculator();
             } else if (index == 1) {
-                if (mMainCalculator.getCurrentState() != R.id.end_state) {
-                    mMainCalculator.transitionToEnd();
-                }
-            } else if (index == 2) {
-                startActivity(new Intent(this, ConverterActivity.class));
+                openPanel(new ConverterFragment(), ConverterFragment.TAG, 1);
             } else {
-                startActivity(new Intent(this, SettingsActivity.class));
+                openPanel(new SettingsFragment(), SettingsFragment.TAG, 2);
             }
         });
+    }
+
+    /** Calculator tab (and back press): leave any panel/sheet for the keys. */
+    private void closePanelsToCalculator() {
+        if (getConverterFragment() != null || getSettingsFragment() != null) {
+            closePanels();
+        } else if (mMainCalculator.getCurrentState() == R.id.end_state) {
+            mMainCalculator.setTransition(R.id.end_state, R.id.start_state);
+            mMainCalculator.transitionToStart();
+        }
+    }
+
+    /** History shortcut between keys and display (and swipe-up zone). */
+    public void onHistoryClick(View view) {
+        openHistoryTab();
+    }
+
+    /** History sheet: panels swap out instantly, the sheet animates in. */
+    private void openHistoryTab() {
+        if (getConverterFragment() != null || getSettingsFragment() != null) {
+            removePanelFragments();
+            slideCalculatorHome();
+        }
+        // A tap during the close slide cancels it and snaps the sheet back.
+        mHistoryClosing = false;
+        final HistoryFragment existing = getHistoryFragment();
+        if (existing != null) {
+            existing.cancelClose();
+        }
+        setHistoryBlur(true);
+        if (mMainCalculator.getCurrentState() != R.id.end_state) {
+            mMainCalculator.setTransition(
+                    mMainCalculator.getCurrentState(), R.id.end_state);
+            mMainCalculator.transitionToEnd();
+        }
+    }
+
+    /**
+     * Show a fullscreen in-place panel (converter/settings). Fully
+     * idempotent: every tap re-asserts fragment + flags + scene state, so
+     * rapid tab-hopping can never strand a panel. The panel state owns the
+     * shared container's visibility, so no manual show/hide can be stomped
+     * by MotionLayout. Switching panels reuses the state directly.
+     */
+    private void openPanel(Fragment fragment, String tag, int navIndex) {
+        final FragmentManager manager = getSupportFragmentManager();
+        if (manager == null || manager.isDestroyed()) {
+            return;
+        }
+        // Slide direction follows travel: higher tab enters from the right,
+        // lower tab from the left — like a sideways swipe.
+        final boolean fromRight = navIndex >= mCurrentTab;
+        mCurrentTab = navIndex;
+        final boolean alreadyShowing = manager.findFragmentByTag(tag) != null;
+        if (getHistoryFragment() != null) {
+            manager.popBackStackImmediate(
+                    HistoryFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            setHistoryBlur(false);
+        }
+        stopActionModeOrContextMenu();
+        if (!alreadyShowing) {
+            final Bundle args = new Bundle();
+            args.putBoolean("slide_from_right", fromRight);
+            fragment.setArguments(args);
+            manager.beginTransaction()
+                    .replace(R.id.history_frame, fragment, tag)
+                    .commit();
+            manager.executePendingTransactions();
+        }
+        mConverterShown = ConverterFragment.TAG.equals(tag);
+        mSettingsShown = SettingsFragment.TAG.equals(tag);
+        slideCalculatorOut();
+        if (mMainCalculator.getCurrentState() != R.id.panel_state) {
+            mMainCalculator.setTransition(
+                    mMainCalculator.getCurrentState(), R.id.panel_state);
+            mMainCalculator.transitionToEnd();
+        }
+        setNavIndex(navIndex);
+    }
+
+    /**
+     * True pager motion: the calculator content slides out left while the
+     * panel slides in from the right. Skipped when already shifted
+     * (panel-to-panel switches).
+     */
+    private void slideCalculatorOut() {
+        final View display = findViewById(R.id.display);
+        if (display != null && display.getTranslationX() == 0 && display.getWidth() > 0) {
+            display.animate()
+                    .translationX(-display.getWidth())
+                    .setDuration(320)
+                    .setInterpolator(
+                            new android.view.animation.DecelerateInterpolator())
+                    .start();
+        }
+        final View inputPad = findViewById(R.id.input_pad);
+        if (inputPad != null && inputPad.getTranslationX() == 0 && inputPad.getWidth() > 0) {
+            inputPad.animate()
+                    .translationX(-inputPad.getWidth())
+                    .setDuration(320)
+                    .setInterpolator(
+                            new android.view.animation.DecelerateInterpolator())
+                    .start();
+        }
+    }
+
+    /** Glide the calculator content back home (panel close / history). */
+    private void slideCalculatorHome() {
+        for (int id : new int[]{R.id.display, R.id.input_pad}) {
+            final View view = findViewById(id);
+            if (view != null && view.getTranslationX() != 0) {
+                view.animate()
+                        .translationX(0f)
+                        .setDuration(320)
+                        .setInterpolator(
+                                new android.view.animation.DecelerateInterpolator())
+                        .start();
+            }
+        }
+    }
+
+    /** Snap the calculator content home (instant panel teardown paths). */
+    private void resetCalculatorShift() {
+        for (int id : new int[]{R.id.display, R.id.input_pad}) {
+            final View view = findViewById(id);
+            if (view != null) {
+                view.animate().cancel();
+                view.setTranslationX(0f);
+            }
+        }
+    }
+
+    /** Leave whichever panel is showing; content glides home, scene fades. */
+    private void closePanels() {
+        removePanelFragments();
+        mCurrentTab = 0;
+        slideCalculatorHome();
+        if (mMainCalculator.getCurrentState() != R.id.start_state) {
+            mMainCalculator.setTransition(
+                    mMainCalculator.getCurrentState(), R.id.start_state);
+            mMainCalculator.transitionToStart();
+        }
+        setNavIndex(0);
+    }
+
+    /** Back/X close: pager-style exit, panel slides out to the right. */
+    private void slidePanelsOut() {
+        final FragmentManager manager = getSupportFragmentManager();
+        Fragment shown = getConverterFragment() != null
+                ? getConverterFragment() : getSettingsFragment();
+        final View view = shown == null ? null : shown.getView();
+        if (manager == null || manager.isDestroyed() || view == null
+                || view.getWidth() == 0) {
+            closePanels();
+            return;
+        }
+        slideCalculatorHome();
+        view.animate()
+                .translationX(view.getWidth())
+                .setDuration(240)
+                .setInterpolator(
+                        new android.view.animation.AccelerateInterpolator())
+                .withEndAction(this::closePanels)
+                .start();
     }
 
     private void setNavIndex(int index) {
@@ -451,17 +660,6 @@ public class Calculator extends AppCompatActivity
     protected void onResume() {
         super.onResume();
 
-        // Settings is a separate Activity. If the vintage theme was changed there,
-        // recreate Calculator once when it comes back to the foreground so every
-        // calculator/history resource is inflated with the same theme.
-        boolean vintageNow = ThemeUtils.isVintage(this);
-        if (!isFinishing() && !mRecreatingForTheme && vintageNow != mAppliedVintageTheme) {
-            mRecreatingForTheme = true;
-            mAppliedVintageTheme = vintageNow;
-            recreate();
-            return;
-        }
-
         // If HistoryFragment is showing, hide the main Calculator elements from accessibility.
         // This is because Talkback does not use visibility as a cue for RelativeLayout elements,
         // and RelativeLayout is the base class of DragLayout.
@@ -472,9 +670,11 @@ public class Calculator extends AppCompatActivity
                         ? View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
                         : View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
 
-        // Returning from Converter/Settings leaves the pill snapped back on the
-        // visible destination instead of stranded on a transient tab.
-        setNavIndex(mMainCalculator.getCurrentState() == R.id.end_state ? 1 : 0);
+        // Snap the pill to the visible destination instead of stranding it
+        // on a transient tab.
+        final int visibleTab = getConverterFragment() != null ? 1
+                : getSettingsFragment() != null ? 2 : 0;
+        setNavIndex(visibleTab);
     }
 
     @Override
@@ -584,17 +784,69 @@ public class Calculator extends AppCompatActivity
                 && historyFragment != null) {
                 historyFragment.stopActionModeOrContextMenu();
             }
+            mSwipeDownX = e.getX();
+            mSwipeDownY = e.getY();
+        } else if (e.getActionMasked() == MotionEvent.ACTION_UP) {
+            handleSwipeNav(e.getX() - mSwipeDownX, e.getY() - mSwipeDownY);
         }
         return super.dispatchTouchEvent(e);
+    }
+
+    /**
+     * Pager swipe navigation between Calculator(0)/Converter(1)/Settings(2):
+     * swipe left goes up a tab, swipe right goes down. Taps are unaffected
+     * (long dominant-axis fling required). History sheet keeps its own
+     * vertical gestures and is left alone.
+     */
+    private void handleSwipeNav(float dx, float dy) {
+        final float minPx = 140 * getResources().getDisplayMetrics().density;
+        if (Math.abs(dx) < minPx || Math.abs(dx) < Math.abs(dy) * 2) {
+            return;
+        }
+        if (mMainCalculator.getCurrentState() == R.id.end_state) {
+            return;
+        }
+        if (dx < 0) {
+            if (getConverterFragment() != null) {
+                openPanel(new SettingsFragment(), SettingsFragment.TAG, 2);
+            } else if (getSettingsFragment() == null
+                    && mMainCalculator.getCurrentState() == R.id.start_state) {
+                openPanel(new ConverterFragment(), ConverterFragment.TAG, 1);
+            }
+        } else {
+            if (getSettingsFragment() != null) {
+                openPanel(new ConverterFragment(), ConverterFragment.TAG, 1);
+            } else if (getConverterFragment() != null) {
+                setNavIndex(0);
+                slidePanelsOut();
+            }
+        }
     }
 
     @Override
     public void onBackPressed() {
         if (!stopActionModeOrContextMenu()) {
+            if (getConverterFragment() != null || getSettingsFragment() != null) {
+                setNavIndex(0);
+                slidePanelsOut();
+                return;
+            }
             final HistoryFragment historyFragment = getHistoryFragment();
             if (mMainCalculator.getCurrentState() == R.id.end_state
                 && historyFragment != null) {
-                mMainCalculator.transitionToStart();
+                if (mHistoryClosing) {
+                    return;
+                }
+                mHistoryClosing = true;
+                // Sync close: pill glides back and blur lifts the moment the
+                // sheet starts sliding down, not after everything finishes.
+                setNavIndex(0);
+                setHistoryBlur(false);
+                historyFragment.animateClose(() -> {
+                    mHistoryClosing = false;
+                    mMainCalculator.setTransition(R.id.end_state, R.id.start_state);
+                    mMainCalculator.transitionToStart();
+                });
                 return;
             }
         }
@@ -621,6 +873,7 @@ public class Calculator extends AppCompatActivity
         // we don't have to worry about subsequent asynchronous completion.
         // Requested in-progress evaluations are handled below.
         cancelUnrequested();
+        clearPendingOperator();
 
         switch (keyCode) {
             case KeyEvent.KEYCODE_NUMPAD_ENTER:
@@ -710,8 +963,26 @@ public class Calculator extends AppCompatActivity
             manager.popBackStack(HistoryFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
 
+        setHistoryBlur(false);
+
         // When HistoryFragment is hidden, the main Calculator is important for accessibility again.
         mMainCalculator.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
+    }
+
+    /** Reference-style frosted blur: blur only the keypad behind the sheet.
+     *  The display above stays sharp, like the reference. Kept cheap (18px)
+     *  so the slide-up stays smooth. */
+    private void setHistoryBlur(boolean enabled) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return;
+        }
+        final RenderEffect effect = enabled
+                ? RenderEffect.createBlurEffect(26f, 26f, Shader.TileMode.CLAMP)
+                : null;
+        final View inputPad = findViewById(R.id.input_pad);
+        if (inputPad != null) {
+            inputPad.setRenderEffect(effect);
+        }
     }
 
     /**
@@ -782,9 +1053,14 @@ public class Calculator extends AppCompatActivity
 
         final int id = view.getId();
         if (id == R.id.eq) {
+            clearPendingOperator();
             onEquals();
         } else if (id == R.id.del) {
+            clearPendingOperator();
             onDelete();
+        } else if (id == R.id.clear) {
+            clearPendingOperator();
+            onClear();
         } else if (id == R.id.toggle_inv) {
             final boolean selected = !mInverseToggle.isSelected();
             mInverseToggle.setSelected(selected);
@@ -812,6 +1088,12 @@ public class Calculator extends AppCompatActivity
             return;
         } else {
             cancelIfEvaluating(false);
+            if (KeyMaps.isBinary(id)) {
+                // iOS-style: keep the pending operator key inverted.
+                setPendingOperator(view);
+            } else {
+                clearPendingOperator();
+            }
             if (haveUnprocessed()) {
                 // For consistency, append as uninterpreted characters.
                 // This may actually be useful for a left parenthesis.
@@ -820,6 +1102,27 @@ public class Calculator extends AppCompatActivity
                 addExplicitKeyToExpr(id);
                 redisplayAfterFormulaChange();
             }
+        }
+    }
+
+    /**
+     * iOS-style pending-operator highlight: the tapped operator key renders
+     * inverted (white key, orange label) until the next keypress.
+     */
+    private void setPendingOperator(View operator) {
+        if (mPendingOperator != null && mPendingOperator != operator) {
+            mPendingOperator.setSelected(false);
+        }
+        mPendingOperator = operator;
+        if (mPendingOperator != null) {
+            mPendingOperator.setSelected(true);
+        }
+    }
+
+    private void clearPendingOperator() {
+        if (mPendingOperator != null) {
+            mPendingOperator.setSelected(false);
+            mPendingOperator = null;
         }
     }
 
@@ -976,6 +1279,7 @@ public class Calculator extends AppCompatActivity
     }
 
     private void onClear() {
+        clearPendingOperator();
         if (mEvaluator.getExpr(Evaluator.MAIN_INDEX).isEmpty() && !haveUnprocessed()) {
             return;
         }
@@ -1168,11 +1472,58 @@ public class Calculator extends AppCompatActivity
                 ? (HistoryFragment) fragment : null;
     }
 
+    private ConverterFragment getConverterFragment() {
+        final FragmentManager manager = getSupportFragmentManager();
+        if (manager == null || manager.isDestroyed()) {
+            return null;
+        }
+        final Fragment fragment = manager.findFragmentByTag(ConverterFragment.TAG);
+        return fragment instanceof ConverterFragment && !fragment.isRemoving()
+                ? (ConverterFragment) fragment : null;
+    }
+
+    private SettingsFragment getSettingsFragment() {
+        final FragmentManager manager = getSupportFragmentManager();
+        if (manager == null || manager.isDestroyed()) {
+            return null;
+        }
+        final Fragment fragment = manager.findFragmentByTag(SettingsFragment.TAG);
+        return fragment instanceof SettingsFragment && !fragment.isRemoving()
+                ? (SettingsFragment) fragment : null;
+    }
+
+    /** Remove both in-place panels without touching the scene. */
+    private void removePanelFragments() {
+        final FragmentManager manager = getSupportFragmentManager();
+        if (manager == null || manager.isDestroyed()) {
+            mConverterShown = false;
+            mSettingsShown = false;
+            return;
+        }
+        boolean removed = false;
+        Fragment fragment = manager.findFragmentByTag(ConverterFragment.TAG);
+        if (fragment != null) {
+            manager.beginTransaction().remove(fragment).commit();
+            removed = true;
+        }
+        fragment = manager.findFragmentByTag(SettingsFragment.TAG);
+        if (fragment != null) {
+            manager.beginTransaction().remove(fragment).commit();
+            removed = true;
+        }
+        if (removed) {
+            manager.executePendingTransactions();
+        }
+        mConverterShown = false;
+        mSettingsShown = false;
+    }
+
     private void showHistoryFragment() {
         if (getHistoryFragment() != null) {
             // If the fragment already exists, do nothing.
             return;
         }
+        removePanelFragments();
 
         final FragmentManager manager = getSupportFragmentManager();
         if (manager == null || manager.isDestroyed() || !prepareForHistory()) {
@@ -1180,10 +1531,17 @@ public class Calculator extends AppCompatActivity
         }
 
         stopActionModeOrContextMenu();
+        // Open/close slides are driven manually by the sheet itself.
         manager.beginTransaction()
+                .setCustomAnimations(0, 0, 0, 0)
                 .replace(R.id.history_frame, new HistoryFragment(), HistoryFragment.TAG)
                 .addToBackStack(HistoryFragment.TAG)
                 .commit();
+
+        // iOS sheet: blur the keypad behind the frosted sheet. The nav pill
+        // fade is driven by the MotionLayout scene (no manual GONE) so the
+        // keypad never stretches mid-transition.
+        setHistoryBlur(true);
 
         // When HistoryFragment is visible, hide all descendants of the main Calculator view.
         mMainCalculator.setImportantForAccessibility(

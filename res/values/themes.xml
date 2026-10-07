@@ -6,17 +6,26 @@
 <resources>
 
     <style name="Theme" parent="Theme.Material3Expressive.DayNight">
-        <item name="android:statusBarColor">@color/display_background_color</item>
+        <item name="android:statusBarColor">@color/ios_light_display_end</item>
         <item name="colorPrimary">@color/modern_primary</item>
         <item name="colorSecondary">@color/modern_primary</item>
         <item name="colorTertiary">@color/modern_primary</item>
-        <item name="calculatorDisplayStartColor">#D8F1EC</item>
-        <item name="calculatorDisplayEndColor">#F7FAF8</item>
-        <item name="calculatorFormulaTextColor">#477C73</item>
-        <item name="calculatorResultTextColor">#123E37</item>
-        <item name="android:windowLightStatusBar">?isLightTheme</item>
-        <item name="android:navigationBarColor">?colorSurface</item>
-        <item name="android:windowLightNavigationBar">?isLightTheme</item>
+        <item name="calculatorDisplayStartColor">@color/ios_light_display_start</item>
+        <item name="calculatorDisplayEndColor">@color/ios_light_display_end</item>
+        <item name="calculatorFormulaTextColor">@color/ios_light_formula</item>
+        <item name="calculatorResultTextColor">@color/ios_light_result</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/ios_light_display_end</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <!-- iOS keypad palette, light configuration. -->
+        <item name="iosDigitBackground">@color/ios_light_digit_bg</item>
+        <item name="iosDigitForeground">@color/ios_light_digit_text</item>
+        <item name="iosFuncBackground">@color/ios_func_bg</item>
+        <item name="iosFuncForeground">@color/ios_func_text</item>
+        <item name="iosOperatorBackground">@color/ios_op_bg</item>
+        <item name="iosOperatorForeground">@color/ios_op_text</item>
+        <item name="iosOperatorActiveBackground">@color/ios_op_text</item>
+        <item name="iosOperatorActiveForeground">@color/ios_op_bg</item>
     </style>
 
     <style name="Theme.Calculator">
@@ -63,27 +72,5 @@
 
 
 
-    <style name="Theme.Calculator.Vintage" parent="Theme.Calculator">
-        <item name="colorPrimary">#B86B24</item>
-        <item name="colorSecondary">#8A5A2B</item>
-        <item name="colorTertiary">#A94B2D</item>
-        <item name="colorSurface">#F2E5CF</item>
-        <item name="colorSurfaceContainer">#E7D5B8</item>
-        <item name="colorSurfaceContainerHigh">#F7EBD7</item>
-        <item name="colorSurfaceVariant">#D8C4A5</item>
-        <item name="colorOnSurface">#2B2117</item>
-        <item name="colorOnSurfaceVariant">#685441</item>
-        <item name="colorPrimaryContainer">#E7A15B</item>
-        <item name="colorOnPrimaryContainer">#2B1607</item>
-        <item name="colorSecondaryContainer">#D9C09B</item>
-        <item name="colorOnSecondaryContainer">#2C2117</item>
-        <item name="calculatorDisplayStartColor">#D5D5B5</item>
-        <item name="calculatorDisplayEndColor">#F0EACF</item>
-        <item name="calculatorFormulaTextColor">#332B1D</item>
-        <item name="calculatorResultTextColor">#11100D</item>
-        <item name="android:statusBarColor">#F2E5CF</item>
-        <item name="android:navigationBarColor">#F2E5CF</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
-    </style>
+
 </resources>

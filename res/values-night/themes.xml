@@ -4,38 +4,25 @@
         <item name="colorPrimary">@color/modern_primary</item>
         <item name="colorSecondary">@color/modern_primary</item>
         <item name="colorTertiary">@color/modern_primary</item>
-        <item name="calculatorDisplayStartColor">#193C37</item>
-        <item name="calculatorDisplayEndColor">#0E1917</item>
-        <item name="calculatorFormulaTextColor">#83BDB3</item>
-        <item name="calculatorResultTextColor">#D9FFF7</item>
-        <item name="android:statusBarColor">@color/display_background_color</item>
-        <item name="android:navigationBarColor">?colorSurface</item>
+        <item name="calculatorDisplayStartColor">@color/ios_black</item>
+        <item name="calculatorDisplayEndColor">@color/ios_black</item>
+        <item name="calculatorFormulaTextColor">@color/ios_display_formula</item>
+        <item name="calculatorResultTextColor">@color/ios_white</item>
+        <item name="android:statusBarColor">@color/ios_black</item>
+        <item name="android:navigationBarColor">@color/ios_black</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
+        <!-- iOS keypad palette (always dark, like the iOS calculator). -->
+        <item name="iosDigitBackground">@color/ios_digit_bg</item>
+        <item name="iosDigitForeground">@color/ios_digit_text</item>
+        <item name="iosFuncBackground">@color/ios_func_bg</item>
+        <item name="iosFuncForeground">@color/ios_func_text</item>
+        <item name="iosOperatorBackground">@color/ios_op_bg</item>
+        <item name="iosOperatorForeground">@color/ios_op_text</item>
+        <item name="iosOperatorActiveBackground">@color/ios_op_text</item>
+        <item name="iosOperatorActiveForeground">@color/ios_op_bg</item>
     </style>
 
-    <style name="Theme.Calculator.Vintage" parent="Theme.Calculator">
-        <item name="colorPrimary">#E59A52</item>
-        <item name="colorSecondary">#C18445</item>
-        <item name="colorTertiary">#D56A43</item>
-        <item name="colorSurface">#211A14</item>
-        <item name="colorSurfaceContainer">#2B231C</item>
-        <item name="colorSurfaceContainerHigh">#342B23</item>
-        <item name="colorSurfaceVariant">#4A3A2B</item>
-        <item name="colorOnSurface">#F7EBDD</item>
-        <item name="colorOnSurfaceVariant">#D7C2AC</item>
-        <item name="colorPrimaryContainer">#C76B28</item>
-        <item name="colorOnPrimaryContainer">#FFF0E1</item>
-        <item name="colorSecondaryContainer">#5A4028</item>
-        <item name="colorOnSecondaryContainer">#F9E4CC</item>
-        <item name="calculatorDisplayStartColor">#4B4B39</item>
-        <item name="calculatorDisplayEndColor">#25261F</item>
-        <item name="calculatorFormulaTextColor">#E6DCC0</item>
-        <item name="calculatorResultTextColor">#FFF5D6</item>
-        <item name="android:statusBarColor">#211A14</item>
-        <item name="android:navigationBarColor">#211A14</item>
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar">false</item>
-    </style>
+
 
 </resources>
