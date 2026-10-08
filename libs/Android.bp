@@ -17,3 +17,31 @@ java_import {
     static_libs: [
     ],
 }
+
+// Prebuilt OriginSU miuix blur (Compose liquid-glass navbar).
+android_library_import {
+    name: "ExactCalculator_miuix-shader",
+    aars: ["miuix-shader-android-0.9.4-rc01.aar"],
+    sdk_version: "35",
+    min_sdk_version: "33",
+    static_libs: [
+        "androidx.compose.ui_ui-graphics",
+        "kotlin-stdlib",
+    ],
+}
+
+android_library_import {
+    name: "ExactCalculator_miuix-blur",
+    aars: ["miuix-blur-android-0.9.4-rc01.aar"],
+    sdk_version: "35",
+    min_sdk_version: "33",
+    static_libs: [
+        "ExactCalculator_miuix-shader",
+        "androidx.compose.foundation_foundation",
+        "androidx.compose.runtime_runtime",
+        "androidx.compose.ui_ui",
+        "androidx.compose.ui_ui-graphics",
+        "androidx.compose.ui_ui-unit",
+        "kotlin-stdlib",
+    ],
+}
