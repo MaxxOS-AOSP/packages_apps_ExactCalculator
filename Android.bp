@@ -18,6 +18,9 @@ android_app {
 
     srcs: ["src/**/*.java", "src/main/java/**/*.kt"],
 
+    // miuix AARs are built with Kotlin 2.4 metadata; Soong's kotlinc is 2.2.
+    kotlincflags: ["-Xskip-metadata-version-check"],
+
     optimize: {
         proguard_flags_files: ["proguard.flags"],
     },
